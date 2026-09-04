@@ -1,0 +1,893 @@
+/*
+ * Pocket Dealer.
+ *
+ * The design was handed over as a 390x780 phone frame on a desk. On an actual
+ * phone there is no frame — the app *is* the phone — so `.phone` fills the
+ * viewport on small screens and only becomes the drawn frame from 800px up,
+ * where somebody is looking at it on a laptop. Everything inside is written
+ * against the frame's width either way, so the two cases share one layout.
+ */
+
+:root {
+  --page: #edebe6;
+  --surface: #fbfaf8;
+  --card: #ffffff;
+
+  --ink: #191919;
+  --ink-2: #8a857c;
+  --ink-3: #b5afa5;
+  --body: #5a554c;
+
+  --green: #0e5a3c;
+  --live: #2e9e6b;
+  --acting: #f0f4ef;
+  --danger: #b3402e;
+
+  --fill: #f2f0eb;
+  --avatar: #eae6de;
+
+  --line-05: rgba(0, 0, 0, 0.05);
+  --line-06: rgba(0, 0, 0, 0.06);
+  --line-09: rgba(0, 0, 0, 0.09);
+  --line-10: rgba(0, 0, 0, 0.1);
+  --line-14: rgba(0, 0, 0, 0.14);
+  --line-15: rgba(0, 0, 0, 0.15);
+  --line-16: rgba(0, 0, 0, 0.16);
+  --line-18: rgba(0, 0, 0, 0.18);
+  --line-20: rgba(0, 0, 0, 0.2);
+
+  --pad: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: 'Schibsted Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* No rubber-banding the whole page behind a fixed action bar. */
+  overscroll-behavior: none;
+}
+
+/* Every tap target opts out of the 300ms double-tap-to-zoom delay. */
+button,
+input,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+#root {
+  min-height: 100%;
+}
+
+/* Amounts are read down a column and compared. They never reflow. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ shell */
+
+.stage {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100dvh;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+@media (min-width: 800px) {
+  .stage {
+    padding: 40px 0;
+  }
+  .phone {
+    width: 390px;
+    height: 780px;
+    min-height: 0;
+    border-radius: 32px;
+    box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Status bar: the time on the left, what this screen is on the right. */
+.statusbar {
+  flex: none;
+  height: 44px;
+  padding: 0 var(--pad);
+  padding-top: env(safe-area-inset-top);
+  box-sizing: content-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+@media (min-width: 800px) {
+  .statusbar {
+    padding-top: 0;
+    box-sizing: border-box;
+    height: 44px;
+  }
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--pad);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.screen.center {
+  justify-content: center;
+  padding: 0 28px 40px;
+}
+
+.screen.flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------- typography */
+
+.display {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.05;
+  letter-spacing: -0.8px;
+  margin: 0;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 20px;
+  margin: 0;
+}
+
+.subtitle {
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.label {
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ink-2);
+}
+
+.hint {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.glyph {
+  font-size: 40px;
+  line-height: 1;
+}
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 56px;
+  border-radius: 16px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s ease, transform 0.06s ease;
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.btn:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.btn.primary {
+  background: var(--ink);
+  color: #fff;
+}
+
+.btn.secondary {
+  background: transparent;
+  border: 1.5px solid var(--line-18);
+  color: var(--ink);
+}
+
+.btn.green {
+  background: var(--green);
+  color: #fff;
+}
+
+.btn.dashed {
+  height: 48px;
+  border: 1.5px dashed var(--line-18);
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  border-radius: 14px;
+}
+
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.back {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--line-14);
+  background: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0 22px;
+  flex: none;
+}
+
+/* ------------------------------------------------------------------ inputs */
+
+.field {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--line-15);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 16px; /* under 16px iOS zooms the page on focus */
+  color: var(--ink);
+  outline: none;
+}
+
+.field::placeholder {
+  color: var(--ink-3);
+}
+
+.field:focus {
+  border-color: var(--line-20);
+}
+
+.field.code {
+  padding: 18px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.field.code::placeholder {
+  letter-spacing: 6px;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: none;
+}
+
+.section > .label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.chip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.chip {
+  height: 46px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line-14);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.chip.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.error-line {
+  color: var(--danger);
+  font-weight: 500;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.grow {
+  margin-top: auto;
+}
+
+.pad-bottom {
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+
+/* ------------------------------------------------------------------- cards */
+
+.card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line-10);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line-06);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--avatar);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.row-name {
+  font-weight: 600;
+  font-size: 15px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag {
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--ink-2);
+  flex: none;
+}
+
+.row-right {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.row.dim {
+  opacity: 0.4;
+}
+
+/* --------------------------------------------------------------- room code */
+
+.code-block {
+  text-align: center;
+  padding: 8px 0 20px;
+  flex: none;
+}
+
+.code-block .label {
+  letter-spacing: 1.5px;
+}
+
+.code-value {
+  font-weight: 800;
+  font-size: 34px;
+  letter-spacing: 8px;
+  margin: 6px 0 4px;
+  /* the letter-spacing pads the right edge; pull it back so it reads centred */
+  text-indent: 8px;
+}
+
+.code-meta {
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------------- table */
+
+.meta-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 22px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--ink-3);
+}
+
+.street-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-14);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ink);
+}
+
+.pot {
+  flex: none;
+  text-align: center;
+  padding: 18px 0 14px;
+}
+
+.pot .label {
+  letter-spacing: 2px;
+}
+
+.pot-amount {
+  font-weight: 800;
+  font-size: 42px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  margin: 4px 0 2px;
+}
+
+.pot-blinds {
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+/*
+ * The scroll lives on the wrapper, not the card, so the card is only ever as
+ * tall as the players in it. Putting flex:1 on the card itself stretches an
+ * empty white slab down the screen at a three-handed table, and only looks
+ * right when nine people are sitting down.
+ */
+.seats-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 16px;
+}
+
+.seats {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line-09);
+  overflow: hidden;
+}
+
+.seat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line-05);
+}
+
+.seat:last-child {
+  border-bottom: 0;
+}
+
+.seat.acting {
+  background: var(--acting);
+}
+
+.seat.done {
+  opacity: 0.35;
+}
+
+/* The role circle stays even when empty so the names line up down the column. */
+.badge {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-20);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--ink);
+}
+
+.badge.empty {
+  border-color: var(--line-10);
+  color: transparent;
+}
+
+.seat-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.seat-name {
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seat-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-2);
+  margin-top: 1px;
+}
+
+.seat-bet {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--green);
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--live);
+  flex: none;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.dot.off {
+  background: var(--ink-3);
+  animation: none;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}
+
+/* -------------------------------------------------------------- action bar */
+
+.actionbar {
+  flex: none;
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px 20px 22px;
+  padding-bottom: max(22px, env(safe-area-inset-bottom));
+}
+
+.stack-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.stack-amount {
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.to-call {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.act {
+  height: 54px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  background: transparent;
+  transition: opacity 0.15s ease, transform 0.06s ease;
+}
+
+.act:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.act:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.act.fold {
+  flex: 1;
+  border-color: rgba(179, 64, 46, 0.45);
+  color: var(--danger);
+}
+
+.act.call {
+  flex: 1.25;
+  border-color: var(--line-20);
+  color: var(--ink);
+}
+
+.act.raise {
+  flex: 1.25;
+  background: var(--ink);
+  color: #fff;
+}
+
+.waiting {
+  height: 52px;
+  border-radius: 14px;
+  background: var(--fill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------ raise sheet */
+
+.raise-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.raise-amount {
+  font-weight: 800;
+  font-size: 32px;
+  text-align: center;
+}
+
+.slider {
+  width: 100%;
+  accent-color: var(--ink);
+  height: 28px;
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.preset {
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--line-16);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.preset:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.raise-confirm {
+  display: flex;
+  gap: 8px;
+}
+
+.raise-confirm .cancel {
+  flex: 1;
+  height: 52px;
+  border-radius: 14px;
+  border: 1.5px solid var(--line-20);
+  background: transparent;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.raise-confirm .go {
+  flex: 2;
+  height: 52px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--green);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- showdown */
+
+.pot-card {
+  background: var(--card);
+  border-radius: 16px;
+  border: 1px solid var(--line-10);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.pot-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pot-card-head .label {
+  letter-spacing: 1px;
+  font-size: 12px;
+}
+
+.pot-card-amount {
+  font-weight: 800;
+  font-size: 22px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.pill {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line-16);
+  background: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.pill.on {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+.award {
+  width: 100%;
+  height: 46px;
+  border-radius: 12px;
+  border: 0;
+  background: var(--green);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.award:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.awarded {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--green);
+}
+
+/* ------------------------------------------------------------------ toast */
+
+.toast {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 140px;
+  background: #fff;
+  color: var(--danger);
+  border-radius: 12px;
+  border: 1px solid var(--line-10);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, 0.35);
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  text-align: center;
+  z-index: 20;
+}
+
+/* ------------------------------------------------------------- connection */
+
+.offline {
+  flex: none;
+  background: var(--danger);
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+  text-align: center;
+  padding: 6px;
+}
+
+.log {
+  margin: 12px 16px 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  font-weight: 500;
+  flex: none;
+  max-height: 62px;
+  overflow-y: auto;
+}

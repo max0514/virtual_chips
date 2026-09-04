@@ -1,0 +1,39 @@
+{
+  "name": "pocket-dealer",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Virtual poker chips for in-person Texas Hold'em. The chips live here, the cards stay on the table.",
+  "scripts": {
+    "dev": "concurrently -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "PORT=8787 tsx watch server/index.ts",
+    "dev:web": "vite",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node build/server/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:web": "vite build",
+    "deploy": "npm run build:web && wrangler deploy",
+    "dev:cf": "npm run build:web && wrangler dev",
+    "typecheck:worker": "tsc -p tsconfig.worker.json"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260903.1",
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.128.0"
+  }
+}

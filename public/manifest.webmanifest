@@ -1,0 +1,17 @@
+{
+  "name": "Pocket Dealer",
+  "short_name": "Dealer",
+  "description": "Virtual poker chips for in-person Texas Hold'em. The chips live here, the cards stay on the table.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBFAF8",
+  "theme_color": "#FBFAF8",
+  "categories": ["games", "utilities"],
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node
+node_modules/
+npm-debug.log*
+.vite/
+
+# Claude Code local workspace
+.claude/
+
+# Cloudflare
+.wrangler/
+worker-configuration.d.ts

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0;background:#EDEBE6;font-family:'Schibsted Grotesk',system-ui,sans-serif;color:#191919}a{color:#0E5A3C}a:hover{color:#0A4630}@keyframes pd-pulse{0%,100%{opacity:1}50%{opacity:.3}}input[type=range]{accent-color:#191919;width:100%}input::placeholder{color:#B5AFA5}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 16px 48px;box-sizing:border-box">
+  <sc-if value="{{ simBarOn }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:7px">
+      <div style="font:500 11px 'Schibsted Grotesk';color:#8A857C;letter-spacing:.3px">Demo — each player would use their own phone</div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px">
+        <sc-for list="{{ simPlayers }}" as="p" hint-placeholder-count="0">
+          <button onClick="{{ p.on }}" style="padding:7px 13px;border-radius:999px;border:1px solid rgba(0,0,0,.14);background:{{ p.bg }};color:{{ p.fg }};font:600 12px 'Schibsted Grotesk';cursor:pointer;display:flex;align-items:center;gap:6px">
+            <sc-if value="{{ p.acting }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:#2E9E6B;animation:pd-pulse 1.2s infinite"></span></sc-if>
+            {{ p.name }}
+          </button>
+        </sc-for>
+        <button onClick="{{ toggleAutoF }}" style="padding:7px 13px;border-radius:999px;border:1px dashed rgba(0,0,0,.2);background:transparent;color:{{ autoFColor }};font:600 12px 'Schibsted Grotesk';cursor:pointer">auto-follow {{ autoFLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="width:390px;max-width:100%;background:#FBFAF8;border:1px solid rgba(0,0,0,.1);border-radius:32px;box-shadow:0 24px 60px -30px rgba(0,0,0,.3);overflow:hidden;display:flex;flex-direction:column;min-height:780px;box-sizing:border-box">
+    <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font:600 12px 'Schibsted Grotesk';color:#B5AFA5"><span>9:41</span><span>{{ phoneOwner }}</span></div>
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Home" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 28px 40px;gap:0">
+        <div style="font-size:40px;line-height:1">&#9824;</div>
+        <h1 style="margin:18px 0 8px;font:800 32px/1.05 'Schibsted Grotesk';letter-spacing:-.8px">Pocket<br>Dealer</h1>
+        <p style="margin:0 0 36px;font:400 15px/1.5 'Schibsted Grotesk';color:#8A857C;text-wrap:pretty">The chips live here.<br>The cards stay on the table.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button onClick="{{ goHost }}" style="height:56px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 16px 'Schibsted Grotesk';cursor:pointer">Host a game</button>
+          <button onClick="{{ goJoin }}" style="height:56px;border-radius:16px;border:1.5px solid rgba(0,0,0,.18);background:transparent;color:#191919;font:600 16px 'Schibsted Grotesk';cursor:pointer">Join with code</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isHostSetup }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Host setup" style="flex:1;display:flex;flex-direction:column;padding:8px 24px 24px;gap:22px">
+        <div style="display:flex;align-items:center;gap:12px"><button onClick="{{ goHome }}" style="width:38px;height:38px;border-radius:12px;border:1px solid rgba(0,0,0,.14);background:#fff;cursor:pointer;font-size:16px">&#8592;</button><span style="font:700 20px 'Schibsted Grotesk'">Host a game</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Your name</label>
+          <input value="{{ hostName }}" onChange="{{ onHostName }}" style="width:100%;box-sizing:border-box;padding:14px 16px;border-radius:14px;border:1px solid rgba(0,0,0,.15);background:#fff;font:500 16px 'Schibsted Grotesk';outline:none">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Blinds</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ blindOpts }}" as="b" hint-placeholder-count="4">
+              <button onClick="{{ b.on }}" style="height:46px;border-radius:12px;border:1.5px solid {{ b.bc }};background:{{ b.bg }};color:{{ b.fg }};font:600 14px 'Schibsted Grotesk';cursor:pointer">{{ b.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Starting stack</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+            <sc-for list="{{ stackOpts }}" as="b" hint-placeholder-count="4">
+              <button onClick="{{ b.on }}" style="height:46px;border-radius:12px;border:1.5px solid {{ b.bc }};background:{{ b.bg }};color:{{ b.fg }};font:600 14px 'Schibsted Grotesk';cursor:pointer">{{ b.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <button onClick="{{ createRoom }}" style="margin-top:auto;height:56px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 16px 'Schibsted Grotesk';cursor:pointer">Create room</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isJoin }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Join" style="flex:1;display:flex;flex-direction:column;padding:8px 24px 24px;gap:22px">
+        <div style="display:flex;align-items:center;gap:12px"><button onClick="{{ goHome }}" style="width:38px;height:38px;border-radius:12px;border:1px solid rgba(0,0,0,.14);background:#fff;cursor:pointer;font-size:16px">&#8592;</button><span style="font:700 20px 'Schibsted Grotesk'">Join a game</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Room code</label>
+          <div style="padding:18px;border-radius:14px;border:1px solid rgba(0,0,0,.12);background:#fff;text-align:center;font:700 26px 'Schibsted Grotesk';letter-spacing:6px">{{ roomCode }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Your name</label>
+          <input value="{{ joinName }}" onChange="{{ onJoinName }}" style="width:100%;box-sizing:border-box;padding:14px 16px;border-radius:14px;border:1px solid rgba(0,0,0,.15);background:#fff;font:500 16px 'Schibsted Grotesk';outline:none">
+        </div>
+        <button onClick="{{ joinGo }}" style="margin-top:auto;height:56px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 16px 'Schibsted Grotesk';cursor:pointer">Join table</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isLobby }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Lobby" style="flex:1;display:flex;flex-direction:column;padding:8px 24px 24px;gap:18px">
+        <div style="text-align:center;padding:22px 0 4px">
+          <div style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1.5px">Room code</div>
+          <div style="font:800 34px 'Schibsted Grotesk';letter-spacing:8px;margin-top:6px">{{ roomCode }}</div>
+          <div style="font:400 13px 'Schibsted Grotesk';color:#8A857C;margin-top:6px">Blinds {{ blindsLabel }} &middot; Stack {{ stackLabel }}</div>
+        </div>
+        <div style="border:1px solid rgba(0,0,0,.1);border-radius:16px;background:#fff;overflow:hidden">
+          <sc-for list="{{ lobbyRows }}" as="p" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(0,0,0,.06)">
+              <div style="width:36px;height:36px;border-radius:50%;background:#EAE6DE;display:flex;align-items:center;justify-content:center;font:700 14px 'Schibsted Grotesk'">{{ p.initial }}</div>
+              <div style="flex:1;font:600 15px 'Schibsted Grotesk'">{{ p.name }} <span style="font:500 11px 'Schibsted Grotesk';color:#8A857C">{{ p.tag }}</span></div>
+              <div style="font:600 14px 'Schibsted Grotesk';font-variant-numeric:tabular-nums">{{ p.stackFmt }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ addDemo }}" style="height:48px;border-radius:14px;border:1.5px dashed rgba(0,0,0,.22);background:transparent;color:#5A554C;font:600 14px 'Schibsted Grotesk';cursor:pointer">+ Simulate a player joining</button>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+          <sc-if value="{{ cantStart }}" hint-placeholder-val="{{ false }}"><div style="text-align:center;font:500 12px 'Schibsted Grotesk';color:#8A857C">Need at least 2 players to start</div></sc-if>
+          <button onClick="{{ startGame }}" style="height:56px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 16px 'Schibsted Grotesk';cursor:pointer;opacity:{{ startOpacity }}">Start game</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Table" style="flex:1;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 22px 0">
+          <span style="font:600 11px 'Schibsted Grotesk';color:#B5AFA5;letter-spacing:1px">{{ roomCode }}</span>
+          <span style="padding:5px 12px;border-radius:999px;border:1px solid rgba(0,0,0,.14);font:700 11px 'Schibsted Grotesk';text-transform:uppercase;letter-spacing:1.5px">{{ streetLabel }}</span>
+          <span style="font:600 11px 'Schibsted Grotesk';color:#B5AFA5;letter-spacing:1px">HAND {{ handNo }}</span>
+        </div>
+        <div style="text-align:center;padding:18px 0 14px">
+          <div style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:2px">Pot</div>
+          <div style="font:800 42px/1.1 'Schibsted Grotesk';font-variant-numeric:tabular-nums;letter-spacing:-1px">{{ potFmt }}</div>
+          <div style="font:400 12px 'Schibsted Grotesk';color:#8A857C;margin-top:2px">Blinds {{ blindsLabel }}</div>
+        </div>
+        <div style="margin:0 16px;border:1px solid rgba(0,0,0,.09);border-radius:16px;background:#fff;overflow:hidden">
+          <sc-for list="{{ tableRows }}" as="p" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(0,0,0,.05);background:{{ p.bg }};opacity:{{ p.op }}">
+              <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid {{ p.roleBc }};color:{{ p.roleFg }};display:flex;align-items:center;justify-content:center;font:700 9px 'Schibsted Grotesk'">{{ p.role }}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font:600 14px 'Schibsted Grotesk';display:flex;align-items:center;gap:6px">{{ p.label }}
+                  <sc-if value="{{ p.acting }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;border-radius:50%;background:#2E9E6B;animation:pd-pulse 1.2s infinite"></span></sc-if>
+                </div>
+                <div style="font:500 12px 'Schibsted Grotesk';color:#8A857C;font-variant-numeric:tabular-nums">{{ p.sub }}</div>
+              </div>
+              <div style="font:700 14px 'Schibsted Grotesk';font-variant-numeric:tabular-nums;color:#0E5A3C">{{ p.betFmt }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto;border-top:1px solid rgba(0,0,0,.08);background:#fff;padding:16px 20px 22px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font:600 11px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">Your stack</div>
+            <div style="font:800 26px 'Schibsted Grotesk';font-variant-numeric:tabular-nums">{{ myStackFmt }}</div></div>
+            <div style="font:600 13px 'Schibsted Grotesk';color:#8A857C;font-variant-numeric:tabular-nums">{{ toCallLine }}</div>
+          </div>
+          <sc-if value="{{ showWaiting }}" hint-placeholder-val="{{ false }}">
+            <div style="height:52px;border-radius:14px;background:#F2F0EB;display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px 'Schibsted Grotesk';color:#8A857C"><span style="width:7px;height:7px;border-radius:50%;background:#2E9E6B;animation:pd-pulse 1.2s infinite"></span>{{ waitingLabel }}</div>
+          </sc-if>
+          <sc-if value="{{ showActions }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ doFold }}" style="flex:1;height:54px;border-radius:14px;border:1.5px solid rgba(179,64,46,.45);background:transparent;color:#B3402E;font:600 15px 'Schibsted Grotesk';cursor:pointer">Fold</button>
+              <button onClick="{{ doCheckCall }}" style="flex:1.25;height:54px;border-radius:14px;border:1.5px solid rgba(0,0,0,.2);background:transparent;color:#191919;font:600 15px 'Schibsted Grotesk';cursor:pointer">{{ callLabel }}</button>
+              <button onClick="{{ openRaise }}" style="flex:1.25;height:54px;border-radius:14px;border:none;background:#191919;color:#fff;font:600 15px 'Schibsted Grotesk';cursor:pointer">{{ raiseBtnLabel }}</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ raiseOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="text-align:center;font:800 32px 'Schibsted Grotesk';font-variant-numeric:tabular-nums">{{ raiseToFmt }}</div>
+              <input type="range" min="{{ raiseMin }}" max="{{ raiseMax }}" step="{{ raiseStep }}" value="{{ raiseTo }}" onChange="{{ onRaiseSlider }}">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                <sc-for list="{{ presets }}" as="pr" hint-placeholder-count="4">
+                  <button onClick="{{ pr.on }}" style="height:38px;border-radius:10px;border:1px solid rgba(0,0,0,.16);background:#fff;font:600 12px 'Schibsted Grotesk';cursor:pointer">{{ pr.label }}</button>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{ closeRaise }}" style="flex:1;height:52px;border-radius:14px;border:1.5px solid rgba(0,0,0,.18);background:transparent;font:600 15px 'Schibsted Grotesk';cursor:pointer">Cancel</button>
+                <button onClick="{{ doRaise }}" style="flex:2;height:52px;border-radius:14px;border:none;background:#0E5A3C;color:#fff;font:600 15px 'Schibsted Grotesk';cursor:pointer">{{ raiseConfirmLabel }}</button>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showFoldedNote }}" hint-placeholder-val="{{ false }}">
+            <div style="height:52px;border-radius:14px;background:#F2F0EB;display:flex;align-items:center;justify-content:center;font:600 14px 'Schibsted Grotesk';color:#8A857C">You folded this hand</div>
+          </sc-if>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isShowdown }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Showdown" style="flex:1;display:flex;flex-direction:column;padding:8px 20px 24px;gap:14px">
+        <div style="padding:12px 4px 0">
+          <div style="font:800 24px 'Schibsted Grotesk';letter-spacing:-.5px">Showdown</div>
+          <div style="font:400 13px/1.5 'Schibsted Grotesk';color:#8A857C;margin-top:4px;text-wrap:pretty">Compare hands at the table, then tap the winner of each pot. Tap two names to split.</div>
+        </div>
+        <sc-for list="{{ potsView }}" as="pt" hint-placeholder-count="1">
+          <div style="border:1px solid rgba(0,0,0,.1);border-radius:16px;background:#fff;padding:16px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between">
+              <span style="font:600 12px 'Schibsted Grotesk';color:#8A857C;text-transform:uppercase;letter-spacing:1px">{{ pt.label }}</span>
+              <span style="font:800 22px 'Schibsted Grotesk';font-variant-numeric:tabular-nums">{{ pt.amtFmt }}</span>
+            </div>
+            <sc-if value="{{ pt.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+                <sc-for list="{{ pt.players }}" as="c" hint-placeholder-count="2">
+                  <button onClick="{{ c.on }}" style="padding:10px 16px;border-radius:999px;border:1.5px solid {{ c.bc }};background:{{ c.bg }};color:{{ c.fg }};font:600 13px 'Schibsted Grotesk';cursor:pointer">{{ c.name }}</button>
+                </sc-for>
+              </div>
+              <button onClick="{{ pt.onAward }}" style="width:100%;margin-top:12px;height:46px;border-radius:12px;border:none;background:#0E5A3C;color:#fff;font:600 14px 'Schibsted Grotesk';cursor:pointer;opacity:{{ pt.awardOp }}">Award pot</button>
+            </sc-if>
+            <sc-if value="{{ pt.won }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:10px;font:600 14px 'Schibsted Grotesk';color:#0E5A3C">&#8594; {{ pt.winnersLabel }}</div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isHandEnd }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Hand result" style="flex:1;display:flex;flex-direction:column;padding:8px 24px 24px;gap:18px">
+        <div style="text-align:center;padding:30px 0 6px">
+          <div style="font-size:30px">&#9824;</div>
+          <div style="font:800 22px/1.3 'Schibsted Grotesk';margin-top:10px;text-wrap:pretty">{{ endMsg }}</div>
+        </div>
+        <div style="border:1px solid rgba(0,0,0,.1);border-radius:16px;background:#fff;overflow:hidden">
+          <sc-for list="{{ endRows }}" as="p" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(0,0,0,.06);opacity:{{ p.op }}">
+              <div style="width:36px;height:36px;border-radius:50%;background:#EAE6DE;display:flex;align-items:center;justify-content:center;font:700 14px 'Schibsted Grotesk'">{{ p.initial }}</div>
+              <div style="flex:1;font:600 15px 'Schibsted Grotesk'">{{ p.name }} <span style="font:500 11px 'Schibsted Grotesk';color:#8A857C">{{ p.tag }}</span></div>
+              <div style="font:700 15px 'Schibsted Grotesk';font-variant-numeric:tabular-nums">{{ p.stackFmt }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <button onClick="{{ nextHand }}" style="margin-top:auto;height:56px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 16px 'Schibsted Grotesk';cursor:pointer">Next hand &#8594;</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isGameOver }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Game over" style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 28px 40px;gap:8px;text-align:center">
+        <div style="font-size:40px">&#9824;</div>
+        <div style="font:800 28px 'Schibsted Grotesk';letter-spacing:-.5px">{{ endMsg }}</div>
+        <div style="font:400 14px 'Schibsted Grotesk';color:#8A857C">takes the whole table</div>
+        <button onClick="{{ resetAll }}" style="margin-top:28px;height:54px;padding:0 36px;border-radius:16px;border:none;background:#191919;color:#fff;font:600 15px 'Schibsted Grotesk';cursor:pointer">New game</button>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:480,&quot;height&quot;:920},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;chips&quot;,&quot;$&quot;,&quot;NT$&quot;],&quot;default&quot;:&quot;chips&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Game&quot;},&quot;simBar&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'home', view: 0, autoF: true, cfg: { sb: 5, bb: 10, stack: 1000 }, hostName: 'Ming', joinName: 'Alex', roomCode: 'TBL-742', players: [], dealer: 0, sbI: -1, bbI: -1, street: 0, handNo: 1, currentBet: 0, minRaise: 0, acting: -1, acted: [], raiseOpen: false, raiseTo: 0, pots: null, endMsg: '' };
+
+  fmt(n) { const c = this.props.currency ?? 'chips'; const p = c === '$' ? '$' : c === 'NT$' ? 'NT$' : ''; return p + n.toLocaleString('en-US'); }
+  seats(ps) { return ps.map((p, i) => i); }
+  nextSeat(ps, i, skip) { let j = i, g = 0; do { j = (j + 1) % ps.length; g++; } while (g <= ps.length && (ps[j].out || (skip && (ps[j].folded || ps[j].allIn)))); return j; }
+  actives(ps) { return this.seats(ps).filter(i => !ps[i].folded && !ps[i].out); }
+
+  startHand(ps0, dealer, handNo) {
+    const ps = ps0.map(p => ({ ...p, committed: 0, total: 0, folded: !!p.out, allIn: false }));
+    const alive = ps.filter(p => !p.out).length;
+    const { sb, bb } = this.state.cfg;
+    const pay = (i, amt) => { const p = ps[i]; const a = Math.min(amt, p.stack); p.stack -= a; p.committed += a; p.total += a; if (p.stack === 0) p.allIn = true; };
+    const sbI = alive === 2 ? dealer : this.nextSeat(ps, dealer);
+    const bbI = this.nextSeat(ps, sbI);
+    pay(sbI, sb); pay(bbI, bb);
+    let act = this.nextSeat(ps, bbI, true);
+    const st = { players: ps, dealer, sbI, bbI, street: 0, handNo, currentBet: bb, minRaise: bb, acting: act, acted: [], raiseOpen: false, pots: null, endMsg: '', screen: 'table' };
+    if (this.state.autoF) st.view = act;
+    return st;
+  }
+
+  afterAction(st) {
+    const ps = st.players;
+    const act = this.actives(ps);
+    if (act.length === 1) {
+      const w = act[0]; const pot = ps.reduce((s, p) => s + p.total, 0);
+      ps[w].stack += pot; ps.forEach(p => { p.committed = 0; p.total = 0; });
+      st.endMsg = ps[w].name + ' wins ' + this.fmt(pot); st.screen = 'handEnd'; st.acting = -1; return st;
+    }
+    const needs = i => { const p = ps[i]; return !p.folded && !p.out && !p.allIn && (p.committed < st.currentBet || !st.acted.includes(i)); };
+    let j = st.acting;
+    for (let k = 0; k < ps.length; k++) { j = (j + 1) % ps.length; if (needs(j)) { st.acting = j; if (this.state.autoF) st.view = j; return st; } }
+    const canAct = act.filter(i => !ps[i].allIn);
+    ps.forEach(p => { p.committed = 0; });
+    st.currentBet = 0; st.minRaise = this.state.cfg.bb; st.acted = [];
+    if (st.street >= 3 || canAct.length < 2) {
+      st.street = 4; st.acting = -1;
+      st.pots = this.buildPots(ps);
+      st.pots.forEach(pt => { if (pt.elig.length === 1) { ps[pt.elig[0]].stack += pt.amt; pt.won = true; pt.winners = [pt.elig[0]]; } });
+      if (st.pots.every(pt => pt.won)) { st.endMsg = 'Pots returned'; st.screen = 'handEnd'; } else st.screen = 'showdown';
+      return st;
+    }
+    st.street++;
+    let a = st.dealer;
+    for (let k = 0; k < ps.length; k++) { a = (a + 1) % ps.length; if (!ps[a].folded && !ps[a].out && !ps[a].allIn) { st.acting = a; break; } }
+    if (this.state.autoF) st.view = st.acting;
+    return st;
+  }
+
+  buildPots(ps) {
+    const levels = [...new Set(ps.filter(p => p.total > 0).map(p => p.total))].sort((a, b) => a - b);
+    const pots = []; let prev = 0;
+    levels.forEach(L => {
+      let amt = 0; ps.forEach(p => { amt += Math.max(0, Math.min(p.total, L) - prev); });
+      const elig = this.seats(ps).filter(i => !ps[i].folded && !ps[i].out && ps[i].total >= L);
+      if (amt > 0) {
+        const last = pots[pots.length - 1];
+        if (last && last.elig.join() === elig.join()) last.amt += amt;
+        else pots.push({ amt, elig, sel: [], won: false, winners: [] });
+      }
+      prev = L;
+    });
+    return pots;
+  }
+
+  mut(fn) { const st = { ...this.state, players: this.state.players.map(p => ({ ...p })), acted: [...this.state.acted], pots: this.state.pots ? this.state.pots.map(pt => ({ ...pt, sel: [...pt.sel], winners: [...pt.winners] })) : null }; fn(st); this.setState(st); }
+  isMyTurn() { return this.state.screen === 'table' && this.state.acting === this.state.view && this.state.acting >= 0; }
+
+  act(kind, to) {
+    if (!this.isMyTurn()) return;
+    this.mut(st => {
+      const i = st.acting, p = st.players[i];
+      if (kind === 'fold') p.folded = true;
+      else if (kind === 'call') { const a = Math.min(st.currentBet - p.committed, p.stack); p.stack -= a; p.committed += a; p.total += a; if (p.stack === 0) p.allIn = true; st.acted.push(i); }
+      else { const a = Math.min(to - p.committed, p.stack); p.stack -= a; p.committed += a; p.total += a; if (p.stack === 0) p.allIn = true; const actual = p.committed; if (actual > st.currentBet) { if (actual - st.currentBet >= st.minRaise) st.minRaise = actual - st.currentBet; st.currentBet = actual; st.acted = [i]; } else st.acted.push(i); st.raiseOpen = false; }
+      this.afterAction(st);
+    });
+  }
+
+  award(pi) {
+    this.mut(st => {
+      const pt = st.pots[pi]; if (!pt || pt.won || pt.sel.length === 0) return;
+      const share = Math.floor(pt.amt / pt.sel.length); let rem = pt.amt - share * pt.sel.length;
+      pt.sel.forEach((w, k) => { st.players[w].stack += share + (k === 0 ? rem : 0); });
+      pt.winners = [...pt.sel]; pt.won = true;
+      if (st.pots.every(x => x.won)) {
+        const names = [...new Set(st.pots.flatMap(x => x.winners.map(w => st.players[w].name)))];
+        st.endMsg = names.join(' & ') + (names.length > 1 ? ' win the pots' : ' wins ' + this.fmt(st.pots.reduce((s, x) => s + x.amt, 0)));
+        st.players.forEach(p => { p.total = 0; }); st.screen = 'handEnd';
+      }
+    });
+  }
+
+  nextHand() {
+    this.mut(st => {
+      st.players.forEach(p => { if (p.stack === 0) p.out = true; });
+      const alive = st.players.filter(p => !p.out);
+      if (alive.length < 2) { st.screen = 'gameOver'; st.endMsg = alive[0].name + ' wins it all'; return; }
+      Object.assign(st, this.startHand(st.players, this.nextSeat(st.players, st.dealer), st.handNo + 1));
+    });
+  }
+
+  addPlayer(name) { this.mut(st => { st.players.push({ name, stack: st.cfg.stack, committed: 0, total: 0, folded: false, allIn: false, out: false }); }); }
+
+  renderVals() {
+    const s = this.state, ps = s.players, fmt = n => this.fmt(n);
+    const scr = s.screen;
+    const viewer = ps[s.view];
+    const streetLabel = ['Pre-flop', 'Flop', 'Turn', 'River', 'Showdown'][s.street] || '';
+    const pot = ps.reduce((t, p) => t + p.total, 0);
+    const toCall = viewer ? Math.max(0, s.currentBet - viewer.committed) : 0;
+    const canCheck = toCall <= 0;
+    const myTurn = this.isMyTurn();
+    const raiseMin = viewer ? Math.min(s.currentBet + s.minRaise, viewer.committed + viewer.stack) : 0;
+    const raiseMax = viewer ? viewer.committed + viewer.stack : 0;
+    const clamp = v => Math.max(raiseMin, Math.min(raiseMax, Math.round(v / s.cfg.sb) * s.cfg.sb));
+    const setTo = v => this.setState({ raiseTo: Math.max(raiseMin, Math.min(raiseMax, v)) });
+    const demoNames = ['Alex', 'Sam', 'Yuki', 'Rosa', 'Leo', 'Nadia'];
+    return {
+      isHome: scr === 'home', isHostSetup: scr === 'hostSetup', isJoin: scr === 'join', isLobby: scr === 'lobby', isTable: scr === 'table', isShowdown: scr === 'showdown', isHandEnd: scr === 'handEnd', isGameOver: scr === 'gameOver',
+      roomCode: s.roomCode, handNo: s.handNo, streetLabel, potFmt: fmt(pot), endMsg: s.endMsg,
+      blindsLabel: s.cfg.sb + ' / ' + s.cfg.bb, stackLabel: fmt(s.cfg.stack),
+      phoneOwner: ps.length && scr !== 'home' && scr !== 'hostSetup' && scr !== 'join' ? (viewer ? viewer.name + "'s phone" : '') : 'Pocket Dealer',
+      simBarOn: (this.props.simBar ?? true) && ps.length > 0 && !['home', 'hostSetup', 'join'].includes(scr),
+      simPlayers: ps.map((p, i) => ({ key: i, name: p.name, acting: i === s.acting, bg: i === s.view ? '#191919' : '#fff', fg: i === s.view ? '#fff' : '#191919', on: () => this.setState({ view: i, raiseOpen: false }) })),
+      toggleAutoF: () => this.setState({ autoF: !s.autoF }), autoFLabel: s.autoF ? 'on' : 'off', autoFColor: s.autoF ? '#0E5A3C' : '#8A857C',
+      goHost: () => this.setState({ screen: 'hostSetup' }), goJoin: () => this.setState({ screen: 'join' }), goHome: () => this.setState({ screen: 'home' }),
+      hostName: s.hostName, onHostName: e => this.setState({ hostName: e.target.value }),
+      joinName: s.joinName, onJoinName: e => this.setState({ joinName: e.target.value }),
+      blindOpts: [[1, 2], [2, 5], [5, 10], [10, 25]].map(([sb, bb]) => { const sel = s.cfg.sb === sb && s.cfg.bb === bb; return { key: sb, label: sb + ' / ' + bb, sel, bc: sel ? '#191919' : 'rgba(0,0,0,.14)', bg: sel ? '#191919' : '#fff', fg: sel ? '#fff' : '#191919', on: () => this.setState({ cfg: { ...s.cfg, sb, bb } }) }; }),
+      stackOpts: [500, 1000, 2000, 5000].map(v => { const sel = s.cfg.stack === v; return { key: v, label: v >= 1000 ? (v / 1000) + 'k' : '' + v, sel, bc: sel ? '#191919' : 'rgba(0,0,0,.14)', bg: sel ? '#191919' : '#fff', fg: sel ? '#fff' : '#191919', on: () => this.setState({ cfg: { ...s.cfg, stack: v } }) }; }),
+      createRoom: () => { this.setState({ players: [{ name: s.hostName || 'Host', stack: s.cfg.stack, committed: 0, total: 0, folded: false, allIn: false, out: false }], screen: 'lobby', view: 0 }); },
+      joinGo: () => { const base = ps.length ? ps : [{ name: 'Ming', stack: s.cfg.stack, committed: 0, total: 0, folded: false, allIn: false, out: false }]; const np = [...base.map(p => ({ ...p })), { name: s.joinName || 'Guest', stack: s.cfg.stack, committed: 0, total: 0, folded: false, allIn: false, out: false }]; this.setState({ players: np, screen: 'lobby', view: np.length - 1 }); },
+      lobbyRows: ps.map((p, i) => ({ key: i, name: p.name, initial: p.name[0].toUpperCase(), tag: i === 0 ? 'Host' : '', stackFmt: fmt(p.stack) })),
+      addDemo: () => { const used = ps.map(p => p.name); const name = demoNames.find(n => !used.includes(n)) || 'Player ' + (ps.length + 1); this.addPlayer(name); },
+      cantStart: ps.length < 2, startOpacity: ps.length < 2 ? 0.35 : 1,
+      startGame: () => { if (ps.length >= 2) this.setState(this.startHand(ps, 0, 1)); },
+      tableRows: ps.map((p, i) => {
+        const role = i === s.dealer ? 'D' : i === s.sbI ? 'SB' : i === s.bbI ? 'BB' : '';
+        const acting = i === s.acting;
+        return { key: i, label: i === s.view ? p.name + ' (you)' : p.name, role, roleBc: role ? '#191919' : 'rgba(0,0,0,.1)', roleFg: role ? '#191919' : 'transparent', acting, bg: acting ? '#F0F4EF' : 'transparent', op: p.folded || p.out ? 0.35 : 1, sub: p.out ? 'Out' : p.folded ? 'Folded' : p.allIn ? 'All-in' : fmt(p.stack), betFmt: p.committed > 0 ? fmt(p.committed) : '' };
+      }),
+      myStackFmt: viewer ? fmt(viewer.stack) : '', toCallLine: viewer && !viewer.folded && toCall > 0 ? 'To call ' + fmt(Math.min(toCall, viewer.stack)) : '',
+      showWaiting: !myTurn && viewer && !viewer.folded && !viewer.allIn, waitingLabel: viewer && viewer.allIn ? "You're all-in" : 'Waiting for ' + (ps[s.acting] ? ps[s.acting].name : '') + '…',
+      showActions: myTurn && !s.raiseOpen, showFoldedNote: !!(viewer && viewer.folded && scr === 'table'),
+      callLabel: canCheck ? 'Check' : viewer && toCall >= viewer.stack ? 'All-in ' + fmt(viewer.stack) : 'Call ' + fmt(toCall),
+      raiseBtnLabel: canCheck && s.currentBet === 0 ? 'Bet' : 'Raise',
+      doFold: () => this.act('fold'), doCheckCall: () => this.act('call'),
+      openRaise: () => { if (myTurn) this.setState({ raiseOpen: true, raiseTo: raiseMin }); },
+      closeRaise: () => this.setState({ raiseOpen: false }),
+      raiseOpen: s.raiseOpen && myTurn, raiseTo: s.raiseTo, raiseToFmt: fmt(s.raiseTo), raiseMin, raiseMax, raiseStep: s.cfg.sb,
+      onRaiseSlider: e => setTo(+e.target.value),
+      presets: [
+        { key: 'min', label: 'Min', on: () => setTo(raiseMin) },
+        { key: 'half', label: '½ pot', on: () => setTo(clamp(s.currentBet + Math.round(pot / 2))) },
+        { key: 'pot', label: 'Pot', on: () => setTo(clamp(s.currentBet + pot)) },
+        { key: 'allin', label: 'All-in', on: () => setTo(raiseMax) },
+      ],
+      raiseConfirmLabel: (s.currentBet === 0 ? 'Bet ' : 'Raise to ') + fmt(s.raiseTo),
+      doRaise: () => this.act('raise', s.raiseTo),
+      potsView: (s.pots || []).map((pt, pi) => ({
+        key: pi, label: pi === 0 ? 'Main pot' : 'Side pot ' + pi, amtFmt: fmt(pt.amt), open: !pt.won, won: pt.won,
+        winnersLabel: pt.winners.map(w => ps[w].name).join(' & '),
+        awardOp: pt.sel.length ? 1 : 0.35,
+        onAward: () => this.award(pi),
+        players: pt.elig.map(i => { const sel = pt.sel.includes(i); return { key: i, name: ps[i].name, bc: sel ? '#0E5A3C' : 'rgba(0,0,0,.16)', bg: sel ? '#0E5A3C' : '#fff', fg: sel ? '#fff' : '#191919', on: () => this.mut(st => { const q = st.pots[pi]; q.sel = q.sel.includes(i) ? q.sel.filter(x => x !== i) : [...q.sel, i]; }) }; }),
+      })),
+      endRows: ps.map((p, i) => ({ key: i, name: p.name, initial: p.name[0].toUpperCase(), stackFmt: fmt(p.stack), tag: p.stack === 0 || p.out ? 'Busted' : i === s.dealer ? 'Dealer' : '', op: p.out || p.stack === 0 ? 0.4 : 1 })),
+      nextHand: () => this.nextHand(),
+      resetAll: () => this.setState({ screen: 'home', players: [], view: 0, dealer: 0, handNo: 1, pots: null, endMsg: '', acting: -1 }),
+    };
+  }
+}
+</script>
+</body>
+</html>

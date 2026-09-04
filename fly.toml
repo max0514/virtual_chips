@@ -1,0 +1,33 @@
+# Fly.io deploy config.
+#
+# The important part is [http_service]: the machine stops when the last player
+# disconnects and starts again on the next request, so an idle table costs
+# nothing.
+
+app = "pocket-dealer"
+primary_region = "nrt"   # Tokyo — nearest to Taipei. `fly platform regions` lists the rest.
+
+[build]
+
+[http_service]
+  internal_port = 8787
+  force_https = true          # Add to Home Screen and the wake lock both need HTTPS
+  auto_stop_machines = "stop" # no players connected -> shut down, stop billing
+  auto_start_machines = true  # next request wakes it, ~1-2s
+  min_machines_running = 0    # nothing runs while nobody is playing
+
+  # Do not raise this. Rooms live in the server's memory, so a second machine
+  # would be a second, separate set of tables: half the players would join a
+  # room the other half cannot see. One machine, always.
+  max_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
