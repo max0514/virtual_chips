@@ -10,7 +10,7 @@
 
 import { DurableObject } from 'cloudflare:workers'
 
-import { RoomStore, RoomError } from '../server/rooms.js'
+import { RoomStore, RoomError, viewForPlayer } from '../server/rooms.js'
 import type { ClientMessage, Room, ServerMessage } from '../server/types.js'
 
 export interface Env {
@@ -143,17 +143,20 @@ export class Tables extends DurableObject<Env> {
 
   /** Push the room to everyone sitting at it, and write the store down. */
   private broadcast(room: Room): void {
-    const payload = JSON.stringify({ t: 'STATE', room } satisfies ServerMessage)
     for (const [socket, session] of this.sessions) {
-      if (session.code === room.code) {
+      if (session.code === room.code && session.playerId) {
         try {
-          socket.send(payload)
+          socket.send(JSON.stringify({ t: 'STATE', room: viewForPlayer(room, session.playerId) } satisfies ServerMessage))
         } catch {
           /* closing */
         }
       }
     }
     this.persist()
+  }
+
+  private sendRoom(socket: WebSocket, room: Room, playerId: string): void {
+    this.send(socket, { t: 'STATE', room: viewForPlayer(room, playerId) })
   }
 
   private persist(): void {
@@ -206,7 +209,7 @@ export class Tables extends DurableObject<Env> {
         const room = store.createRoom(msg.playerId, msg.name, msg.config)
         session.playerId = msg.playerId
         session.code = room.code
-        this.send(socket, { t: 'STATE', room })
+        this.sendRoom(socket, room, msg.playerId)
         this.persist()
         return
       }
@@ -215,7 +218,7 @@ export class Tables extends DurableObject<Env> {
         const room = store.joinRoom(msg.code, msg.playerId, msg.name)
         session.playerId = msg.playerId
         session.code = room.code
-        this.send(socket, { t: 'STATE', room })
+        this.sendRoom(socket, room, msg.playerId)
         this.broadcast(room)
         return
       }
@@ -224,7 +227,7 @@ export class Tables extends DurableObject<Env> {
         const room = store.rejoin(msg.code, msg.playerId)
         session.playerId = msg.playerId
         session.code = room.code
-        this.send(socket, { t: 'STATE', room })
+        this.sendRoom(socket, room, msg.playerId)
         return
       }
 

@@ -27,6 +27,9 @@ export function Lobby({
           Blinds {room.config.smallBlind} / {room.config.bigBlind} · Stack{' '}
           {formatChips(room, room.config.startingStack)}
         </div>
+        <div className="code-meta" style={{ marginTop: 4 }}>
+          {room.config.gameMode === 'texasHoldem' ? 'Texas Hold’em · app deals the cards' : 'Virtual chips · bring your own cards'}
+        </div>
       </div>
 
       <div className="card">
@@ -54,7 +57,7 @@ export function Lobby({
               </div>
             )}
             <button className="btn primary" disabled={!enough} onClick={onStart}>
-              Start game
+              {room.config.gameMode === 'texasHoldem' ? 'Deal first hand' : 'Start game'}
             </button>
           </>
         ) : (

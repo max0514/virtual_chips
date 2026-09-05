@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Room } from '../../server/types'
+import type { Card, Room } from '../../server/types'
 import { CountUp } from '../components'
 import {
   displayCode,
@@ -63,6 +63,8 @@ export function Table({
         </div>
       </div>
 
+      {room.config.gameMode === 'texasHoldem' && <Board cards={room.board} />}
+
       <div className="seats-scroll">
         <div className="seats">
           {room.players.map((p, seat) => {
@@ -87,6 +89,11 @@ export function Table({
                 </div>
                 {p.committed > 0 && (
                   <div className="seat-bet num">{formatChips(room, p.committed)}</div>
+                )}
+                {room.config.gameMode === 'texasHoldem' && !p.folded && !p.out && (
+                  <div className="seat-cards" aria-label={`${p.name}'s cards`}>
+                    {p.holeCards.length ? p.holeCards.map((card) => <PlayingCard key={card} card={card} compact />) : <><CardBack /><CardBack /></>}
+                  </div>
                 )}
               </div>
             )
@@ -155,6 +162,15 @@ function ActionBar({
         )}
       </div>
 
+      {room.config.gameMode === 'texasHoldem' && d.me.holeCards.length > 0 && (
+        <div className="your-cards">
+          <span className="label">Your cards</span>
+          <div className="playing-cards">
+            {d.me.holeCards.map((card) => <PlayingCard key={card} card={card} />)}
+          </div>
+        </div>
+      )}
+
       {raiseOpen && d.isMyTurn ? (
         <RaiseSheet
           room={room}
@@ -193,6 +209,27 @@ function ActionBar({
       )}
     </div>
   )
+}
+
+function Board({ cards }: { cards: Card[] }) {
+  return (
+    <div className="board">
+      <span className="label">Board</span>
+      <div className="playing-cards">
+        {Array.from({ length: 5 }, (_, index) => cards[index] === undefined ? <CardBack key={index} /> : <PlayingCard key={cards[index]} card={cards[index]} />)}
+      </div>
+    </div>
+  )
+}
+
+export function PlayingCard({ card, compact = false }: { card: Card; compact?: boolean }) {
+  const rank = ['', '', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'][2 + (card >> 2)]
+  const suit = ['♠', '♥', '♦', '♣'][card & 3]
+  return <span className={`playing-card${compact ? ' compact' : ''}${(card & 3) === 1 || (card & 3) === 2 ? ' red' : ''}`}>{rank}<small>{suit}</small></span>
+}
+
+function CardBack() {
+  return <span className="card-back" aria-hidden="true" />
 }
 
 /**

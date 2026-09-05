@@ -1,15 +1,16 @@
 # Pocket Dealer
 
-Virtual poker chips for in-person Texas Hold'em. The chips live here, the cards
-stay on the table.
+Two ways to run a Texas Hold'em night: virtual poker chips with real cards on
+the table, or a complete card-dealing game on everyone's phone.
 
-Everyone sits down with real cards. Nobody brings a chip set. One person hosts,
-reads out a six-character room code, and everyone else joins from their own
-phone. The app is the dealer and the banker: it tracks stacks, posts blinds,
+One person hosts, chooses a mode, reads out a six-character room code, and
+everyone else joins from their own phone. The app tracks stacks, posts blinds,
 runs the betting, builds side pots, and pays out.
 
-It does **not** read cards. At showdown you compare hands the way you always
-have, and the host taps who won.
+Choose **Virtual chips** when the physical deck stays on the table; at showdown
+the host selects each pot winner. Choose **Texas Hold'em** when the app should
+deal private hole cards and the shared board, evaluate every hand, and award
+main and side pots automatically.
 
 ---
 
@@ -55,10 +56,10 @@ screen awake, only run on a secure connection.
 
 ### 3. Everyone joins
 
-One person taps **Host a game**, picks blinds and a starting stack, and gets a
-code like `NZ9-JBF`. Everyone else opens the same link, taps **Join with code**,
-and types it. The host can also tap **Share room code**, which sends a link that
-skips the typing.
+One person taps **Host a game**, picks **Virtual chips** or **Texas Hold'em**,
+then chooses blinds and a starting stack. They get a code like `NZ9-JBF`.
+Everyone else opens the same link, taps **Join with code**, and types it. The
+host can also tap **Share room code**, which sends a link that skips the typing.
 
 Two players minimum, nine maximum. Then the host taps **Start game**.
 
@@ -67,9 +68,10 @@ Two players minimum, nine maximum. Then the host taps **Start game**.
 Your phone shows the pot, everyone's stack, and whose turn it is. Buttons appear
 **only when it is your turn** — Fold, Check/Call, and Bet/Raise with a slider.
 
-When a hand reaches showdown, everyone turns their cards over as usual and the
-**host** taps the winner of each pot. Tap two names to split. Side pots are
-worked out for you and awarded one at a time.
+In Virtual chips mode, everyone turns their cards over as usual and the **host**
+taps the winner of each pot. Tap two names to split. In Texas Hold'em mode,
+each player sees only their own hole cards while betting; the board appears as
+the hand progresses and the server evaluates and awards every pot at showdown.
 
 Between hands the host can **Adjust chips** for rebuys. Every rebuy is written
 into the table log so nobody has to take anyone's word for it.

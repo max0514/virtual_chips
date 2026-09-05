@@ -69,6 +69,12 @@ export class RoomStore {
       // Nobody is connected to a freshly restored store; sockets re-mark
       // presence as they come back.
       for (const p of room.players) p.connected = false
+      // Rooms created before card dealing existed remain valid virtual-chip
+      // rooms when a Durable Object wakes up with an older saved payload.
+      room.config.gameMode ??= 'virtualChips'
+      room.board ??= []
+      room.deck ??= []
+      for (const p of room.players) p.holeCards ??= []
       this.rooms.set(room.code, room)
     }
   }
@@ -91,6 +97,8 @@ export class RoomStore {
       hostId: playerId,
       status: 'lobby',
       config: clean,
+      board: [],
+      deck: [],
       players: [seatPlayer(playerId, cleanName(name), 0, clean.startingStack)],
       dealerSeat: 0,
       sbSeat: 0,
@@ -382,6 +390,7 @@ function seatPlayer(id: string, name: string, seat: number, stack: number): Play
     allIn: false,
     out: false,
     connected: true,
+    holeCards: [],
   }
 }
 
@@ -426,5 +435,29 @@ function validateConfig(config: RoomConfig): RoomConfig {
     bigBlind,
     startingStack,
     currency: currency === '$' || currency === 'NT$' ? currency : 'chips',
+    gameMode: config?.gameMode === 'texasHoldem' ? 'texasHoldem' : 'virtualChips',
+  }
+}
+
+/**
+ * Make the table safe to send to one phone. Hole cards are private until a
+ * showdown, and the undealt deck is never a client concern. This copy is used
+ * at the transport boundary, leaving the authoritative room untouched.
+ */
+export function viewForPlayer(room: Room, playerId: string): Room {
+  const reveal = room.status === 'showdown' || room.status === 'handEnd'
+  return {
+    ...room,
+    deck: [],
+    board: [...room.board],
+    players: room.players.map((player) => ({
+      ...player,
+      holeCards:
+        player.id === playerId || (reveal && !player.folded && !player.out)
+          ? [...player.holeCards]
+          : [],
+    })),
+    pots: room.pots?.map((pot) => ({ ...pot, eligible: [...pot.eligible], winners: [...pot.winners] })) ?? null,
+    log: [...room.log],
   }
 }

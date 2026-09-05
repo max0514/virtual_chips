@@ -20,6 +20,7 @@
  */
 
 import type { ActionKind, Player, Pot, Room, Street } from './types.js'
+import { compareHands, handName, shuffledDeck } from './cards.js'
 
 const STREETS: Street[] = ['preflop', 'flop', 'turn', 'river', 'showdown']
 
@@ -131,6 +132,15 @@ export function startHand(room: Room, dealerSeat: number, handNo: number): void 
     p.total = 0
     p.allIn = false
     p.folded = p.out // busted players are folded for every downstream check
+    p.holeCards = []
+  }
+
+  room.board = []
+  room.deck = room.config.gameMode === 'texasHoldem' ? shuffledDeck() : []
+  if (room.config.gameMode === 'texasHoldem') {
+    for (const player of room.players) {
+      if (!player.out) player.holeCards = [room.deck.pop()!, room.deck.pop()!]
+    }
   }
 
   const { smallBlind, bigBlind } = room.config
@@ -325,11 +335,13 @@ function closeStreet(room: Room): void {
   // Fewer than two players can still put chips in, so the rest of the betting
   // is a formality — run it out and go straight to comparing hands.
   if (isRiver || canStillAct.length < 2) {
+    dealToBoard(room, 5)
     toShowdown(room)
     return
   }
 
   room.street = STREETS[STREETS.indexOf(room.street) + 1]
+  dealToBoard(room, room.street === 'flop' ? 3 : room.street === 'turn' || room.street === 'river' ? 1 : 0)
   // Post-flop the first live seat after the dealer acts first.
   room.actingSeat = nextSeat(players, room.dealerSeat, true)
   note(room, `— ${labelFor(room.street)} —`)
@@ -361,10 +373,43 @@ function toShowdown(room: Room): void {
 
   if (room.pots.every((pot) => pot.awarded)) {
     finishHand(room)
+  } else if (room.config.gameMode === 'texasHoldem') {
+    for (let index = 0; index < room.pots.length; index++) {
+      const pot = room.pots[index]
+      if (!pot.awarded) awardPot(room, index, winningIds(room, pot))
+    }
   } else {
     room.status = 'showdown'
     note(room, '— Showdown —')
   }
+}
+
+/** Deal public board cards only in the card-dealing game mode. */
+function dealToBoard(room: Room, count: number): void {
+  if (room.config.gameMode !== 'texasHoldem') return
+  while (room.board.length < 5 && count-- > 0) room.board.push(room.deck.pop()!)
+}
+
+/** Every eligible player is evaluated independently for each main/side pot. */
+function winningIds(room: Room, pot: Pot): string[] {
+  let best: number[] | null = null
+  let winners: string[] = []
+  for (const id of pot.eligible) {
+    const player = room.players.find((candidate) => candidate.id === id)!
+    const cards = [...player.holeCards, ...room.board]
+    if (!best || compareHands(cards, best) > 0) {
+      best = cards
+      winners = [id]
+    } else if (compareHands(cards, best) === 0) {
+      winners.push(id)
+    }
+  }
+  if (winners.length) {
+    const names = winners.map((id) => room.players.find((player) => player.id === id)!.name)
+    const winner = room.players.find((player) => player.id === winners[0])!
+    note(room, `${names.join(' & ')} show ${handName([...winner.holeCards, ...room.board])}`)
+  }
+  return winners
 }
 
 /* ---------------------------------------------------------------- side pots */

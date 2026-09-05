@@ -14,7 +14,7 @@ import { extname, join, normalize, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { WebSocketServer, type WebSocket } from 'ws'
 
-import { RoomStore, RoomError } from './rooms.js'
+import { RoomStore, RoomError, viewForPlayer } from './rooms.js'
 import type { ClientMessage, Room, ServerMessage } from './types.js'
 
 const PORT = Number(process.env.PORT ?? 8787)
@@ -52,10 +52,15 @@ function fail(socket: WebSocket, err: unknown): void {
 
 /** Push the room to everyone sitting at it. */
 function broadcast(room: Room): void {
-  const payload = JSON.stringify({ t: 'STATE', room } satisfies ServerMessage)
   for (const [socket, session] of sessions) {
-    if (session.code === room.code && socket.readyState === socket.OPEN) socket.send(payload)
+    if (session.code === room.code && session.playerId && socket.readyState === socket.OPEN) {
+      socket.send(JSON.stringify({ t: 'STATE', room: viewForPlayer(room, session.playerId) } satisfies ServerMessage))
+    }
   }
+}
+
+function sendRoom(socket: WebSocket, room: Room, playerId: string): void {
+  send(socket, { t: 'STATE', room: viewForPlayer(room, playerId) })
 }
 
 store.onChange = broadcast
@@ -72,7 +77,7 @@ function handleMessage(socket: WebSocket, session: Session, msg: ClientMessage):
       const room = store.createRoom(msg.playerId, msg.name, msg.config)
       session.playerId = msg.playerId
       session.code = room.code
-      send(socket, { t: 'STATE', room })
+      sendRoom(socket, room, msg.playerId)
       return
     }
 
@@ -82,7 +87,7 @@ function handleMessage(socket: WebSocket, session: Session, msg: ClientMessage):
       session.code = room.code
       // joinRoom only broadcasts when something changed; a plain rejoin of an
       // already-seated player needs the state pushed to this socket regardless.
-      send(socket, { t: 'STATE', room })
+      sendRoom(socket, room, msg.playerId)
       broadcast(room)
       return
     }
@@ -91,7 +96,7 @@ function handleMessage(socket: WebSocket, session: Session, msg: ClientMessage):
       const room = store.rejoin(msg.code, msg.playerId)
       session.playerId = msg.playerId
       session.code = room.code
-      send(socket, { t: 'STATE', room })
+      sendRoom(socket, room, msg.playerId)
       return
     }
 

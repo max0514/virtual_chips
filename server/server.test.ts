@@ -215,7 +215,7 @@ async function threeHanded(stacks?: [number, number, number]) {
     t: 'CREATE_ROOM',
     name: 'Ming',
     playerId: ming.id,
-    config: { smallBlind: 5, bigBlind: 10, startingStack: 1000, currency: 'chips' },
+    config: { smallBlind: 5, bigBlind: 10, startingStack: 1000, currency: 'chips', gameMode: 'virtualChips' },
   })
   const code = ming.room!.code
 
@@ -292,7 +292,7 @@ describe('rooms', () => {
       t: 'CREATE_ROOM',
       name: 'Ming',
       playerId: ming.id,
-      config: { smallBlind: 5, bigBlind: 10, startingStack: 1000, currency: 'chips' },
+      config: { smallBlind: 5, bigBlind: 10, startingStack: 1000, currency: 'chips', gameMode: 'virtualChips' },
     })
     const code = ming.room!.code
 

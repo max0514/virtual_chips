@@ -347,6 +347,47 @@ a,
   color: #fff;
 }
 
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.mode-card {
+  appearance: none;
+  width: 100%;
+  padding: 13px 14px;
+  border: 1.5px solid var(--line-14);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mode-card strong,
+.mode-card span {
+  display: block;
+}
+
+.mode-card strong {
+  font-size: 14px;
+}
+
+.mode-card span {
+  margin-top: 3px;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.mode-card.on {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  background: #f0f7f3;
+}
+
 .error-line {
   color: var(--danger);
   font-weight: 500;
@@ -498,6 +539,65 @@ a,
   color: var(--ink-2);
 }
 
+.board {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+
+.playing-cards,
+.seat-cards {
+  display: flex;
+  gap: 4px;
+}
+
+.playing-card,
+.card-back {
+  width: 31px;
+  height: 43px;
+  border: 1px solid var(--line-14);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 3px 8px -5px rgba(0, 0, 0, 0.45);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 0.9;
+}
+
+.playing-card small {
+  margin-top: 2px;
+  font-size: 13px;
+}
+
+.playing-card.red {
+  color: var(--danger);
+}
+
+.playing-card.compact,
+.seat-cards .card-back {
+  width: 19px;
+  height: 27px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.playing-card.compact small {
+  margin-top: 0;
+  font-size: 9px;
+}
+
+.card-back {
+  background: repeating-linear-gradient(45deg, #d9d3ca 0, #d9d3ca 3px, #bdb5a9 3px, #bdb5a9 6px);
+}
+
 /*
  * The scroll lives on the wrapper, not the card, so the card is only ever as
  * tall as the players in it. Putting flex:1 on the card itself stretches an
@@ -584,6 +684,14 @@ a,
   color: var(--green);
 }
 
+.seat-cards {
+  margin-left: auto;
+}
+
+.seat-cards + .seat-bet {
+  margin-left: 0;
+}
+
 .dot {
   width: 6px;
   height: 6px;
@@ -629,6 +737,13 @@ a,
   align-items: baseline;
   justify-content: space-between;
   margin-bottom: 14px;
+}
+
+.your-cards {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 0 3px;
 }
 
 .stack-amount {

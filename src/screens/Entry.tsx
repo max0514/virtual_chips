@@ -1,7 +1,7 @@
 /** Home, host setup and join — the three screens before there is a table. */
 
 import { useState } from 'react'
-import type { RoomConfig } from '../../server/types'
+import type { GameMode, RoomConfig } from '../../server/types'
 import { Header } from '../components'
 
 const BLINDS: Array<[number, number]> = [
@@ -22,9 +22,9 @@ export function Home({ onHost, onJoin }: { onHost: () => void; onJoin: () => voi
         Dealer
       </h1>
       <p className="subtitle" style={{ marginBottom: 36 }}>
-        The chips live here.
+        Run the chips, or let the app
         <br />
-        The cards stay on the table.
+        deal a full Hold'em game.
       </p>
       <div className="btn-stack">
         <button className="btn primary" onClick={onHost}>
@@ -48,6 +48,7 @@ export function HostSetup({
   const [name, setName] = useState('')
   const [blinds, setBlinds] = useState(2) // 5 / 10
   const [stack, setStack] = useState(1) // 1,000
+  const [gameMode, setGameMode] = useState<GameMode>('virtualChips')
 
   const ready = name.trim().length > 0
 
@@ -67,6 +68,26 @@ export function HostSetup({
             autoComplete="nickname"
             autoFocus
           />
+        </div>
+
+        <div className="section">
+          <span className="label">Game mode</span>
+          <div className="mode-grid">
+            <button
+              className={`mode-card${gameMode === 'virtualChips' ? ' on' : ''}`}
+              onClick={() => setGameMode('virtualChips')}
+            >
+              <strong>Virtual chips</strong>
+              <span>Use your own cards. The app is the banker.</span>
+            </button>
+            <button
+              className={`mode-card${gameMode === 'texasHoldem' ? ' on' : ''}`}
+              onClick={() => setGameMode('texasHoldem')}
+            >
+              <strong>Texas Hold'em</strong>
+              <span>Private hole cards, board, and automatic showdown.</span>
+            </button>
+          </div>
         </div>
 
         <div className="section">
@@ -110,6 +131,7 @@ export function HostSetup({
               bigBlind: BLINDS[blinds][1],
               startingStack: STACKS[stack],
               currency: 'chips',
+              gameMode,
             })
           }
         >

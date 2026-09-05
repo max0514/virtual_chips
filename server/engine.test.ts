@@ -24,12 +24,14 @@ import {
   startHand,
 } from './engine.js'
 import type { Player, Room, RoomConfig } from './types.js'
+import { viewForPlayer } from './rooms.js'
 
 const CONFIG: RoomConfig = {
   smallBlind: 5,
   bigBlind: 10,
   startingStack: 1000,
   currency: 'chips',
+  gameMode: 'virtualChips',
 }
 
 function makePlayer(name: string, seat: number, stack: number): Player {
@@ -44,6 +46,7 @@ function makePlayer(name: string, seat: number, stack: number): Player {
     allIn: false,
     out: false,
     connected: true,
+    holeCards: [],
   }
 }
 
@@ -53,6 +56,8 @@ function makeRoom(names: string[], stacks?: number[], config: RoomConfig = CONFI
     hostId: 'p0',
     status: 'lobby',
     config,
+    board: [],
+    deck: [],
     players: names.map((n, i) => makePlayer(n, i, stacks?.[i] ?? config.startingStack)),
     dealerSeat: 0,
     sbSeat: 0,
@@ -113,6 +118,26 @@ describe('blinds', () => {
     expect(room.players[1].committed).toBe(4)
     expect(room.players[1].allIn).toBe(true)
     expect(chipsInPlay(room)).toBe(1004)
+  })
+})
+
+describe('card-dealing mode', () => {
+  it('deals private hole cards, reveals the board, and pays showdown automatically', () => {
+    const room = makeRoom(['Ming', 'Alex'], undefined, { ...CONFIG, gameMode: 'texasHoldem' })
+    const chips = chipsInPlay(room)
+    startHand(room, 0, 1)
+
+    expect(room.players.map((player) => player.holeCards)).toHaveLength(2)
+    expect(new Set(room.players.flatMap((player) => player.holeCards)).size).toBe(4)
+    expect(viewForPlayer(room, 'p0').players[1].holeCards).toEqual([])
+
+    // Call/check pre-flop, then check every street through the river.
+    for (let action = 0; action < 8; action++) applyAction(room, 'CHECK_CALL')
+
+    expect(room.board).toHaveLength(5)
+    expect(room.status).toBe('handEnd')
+    expect(room.pots?.every((pot) => pot.awarded)).toBe(true)
+    expect(chipsInPlay(room)).toBe(chips)
   })
 })
 

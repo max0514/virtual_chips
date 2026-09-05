@@ -10,11 +10,18 @@ export type RoomStatus = 'lobby' | 'hand' | 'showdown' | 'handEnd' | 'gameOver'
 
 export type Currency = 'chips' | '$' | 'NT$'
 
+/** Whether the app is a banker only, or also deals the cards. */
+export type GameMode = 'virtualChips' | 'texasHoldem'
+
+/** A compact card id: rank is `2 + card / 4`, suit is `card % 4`. */
+export type Card = number
+
 export interface RoomConfig {
   smallBlind: number
   bigBlind: number
   startingStack: number
   currency: Currency
+  gameMode: GameMode
 }
 
 export interface Player {
@@ -33,6 +40,8 @@ export interface Player {
   out: boolean
   /** Socket presence. Cosmetic: a disconnected player keeps their seat and stack. */
   connected: boolean
+  /** Server-authoritative hole cards. Transport redacts every other player's cards. */
+  holeCards: Card[]
 }
 
 export interface Pot {
@@ -60,6 +69,10 @@ export interface Room {
   hostId: string
   status: RoomStatus
   config: RoomConfig
+  /** Cards already dealt to the shared board, if this is a Texas Hold'em table. */
+  board: Card[]
+  /** The undealt portion of the deck. Never sent to a client. */
+  deck: Card[]
   players: Player[]
   dealerSeat: number
   sbSeat: number
